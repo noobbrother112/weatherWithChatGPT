@@ -29,8 +29,11 @@ type GptResponse struct {
 
 // GptApiSender for ChatGPT
 func GptApiSender() {
+	//Channel for http response
+	c := make(chan []byte)
+
 	// OpenAI API key
-	apiKey := checkApiKey()
+	apiKey := checkGPTApiKey()
 
 	// Set up request
 	request := GptRequest{
@@ -50,31 +53,10 @@ func GptApiSender() {
 	}
 	fmt.Println(string(reqJson))
 
-	// Create HTTP request
-	req, err := http.NewRequest("POST", endpoint, strings.NewReader(string(reqJson)))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+	go apiSender("POST", endpoint, apiKey, reqJson, c)
 
-	// Send HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	// Read response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	var body = <-c
+	fmt.Println(string(body))
 	// Convert response to JSON
 	var response GptResponse
 	err = json.Unmarshal(body, &response)
@@ -87,10 +69,42 @@ func GptApiSender() {
 	fmt.Println(response.Choices[0].Text)
 }
 
-func checkApiKey() string {
+func checkGPTApiKey() string {
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
 		log.Fatalln("API key is not set")
 	}
 	return apiKey
+}
+
+func apiSender(method, url, apiKey string, jsonStr []byte, c chan<- []byte) {
+	fmt.Println(string(jsonStr))
+
+	// Create HTTP request
+	req, err := http.NewRequest(method, url, strings.NewReader(string(jsonStr)))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	// Send HTTP request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	c <- body
 }
