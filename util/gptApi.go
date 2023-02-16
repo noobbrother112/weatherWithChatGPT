@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const endpoint = "https://api.openai.com/v1/completions"
+const gptEndpoint = "https://api.openai.com/v1/completions"
 
 type GptRequest struct {
 	Prompt           string  `json:"prompt"`
@@ -48,7 +48,7 @@ func GptApiSender() {
 	}
 	fmt.Println(string(reqJson))
 
-	go ApiSender("POST", endpoint, apiKey, reqJson, c)
+	go ApiSender("POST", gptEndpoint, apiKey, reqJson, c)
 	var body = <-c
 
 	// Convert response to JSON

@@ -14,6 +14,9 @@ func ApiSender(method, url, apiKey string, jsonStr []byte, c chan<- []byte) {
 	fmt.Println(string(jsonStr))
 
 	// Create HTTP request
+	if jsonStr == nil {
+		jsonStr = []byte("")
+	}
 	req, err := http.NewRequest(method, url, strings.NewReader(string(jsonStr)))
 	if err != nil {
 		fmt.Println(err)
@@ -45,7 +48,7 @@ func ApiSender(method, url, apiKey string, jsonStr []byte, c chan<- []byte) {
 func CheckAndGetApiKey(key string) string {
 	apiKey := os.Getenv(key)
 	if apiKey == "" {
-		log.Fatalln("WHOIS API KEY is not set")
+		log.Fatalln("API KEY is not set")
 	}
 	return apiKey
 }
