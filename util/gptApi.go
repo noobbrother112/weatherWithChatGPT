@@ -3,11 +3,6 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"strings"
 )
 
 const endpoint = "https://api.openai.com/v1/completions"
@@ -33,12 +28,12 @@ func GptApiSender() {
 	c := make(chan []byte)
 
 	// OpenAI API key
-	apiKey := checkGPTApiKey()
+	apiKey := CheckAndGetApiKey("API_KEY")
 
 	// Set up request
 	request := GptRequest{
 		Model:            "text-davinci-003",
-		Prompt:           "영하10도에선 어떤 옷을 입어야 하니?",
+		Prompt:           "이번예보기간에는고기압의가장자리에들어가끔구름많겠습니다. 기온은평년(최저기온 : 2 ~ 7도, 최고기온 : 16 ~ 19도)과비슷하거나조금높겠습니다. 강수량은평년(강수량 : 1~4mm)보다적겠습니다. 서해중부해상의물결은 1~2m로일겠습니다. 이런날씨에는 어떤 옷을 입어야하는지 상의, 하의, 신발 순으로 추천해주고 만약 준비물이 필요하다면 그것도 추천해줘",
 		MaxTokens:        600,
 		Temperature:      0,
 		FrequencyPenalty: 0,
@@ -53,10 +48,9 @@ func GptApiSender() {
 	}
 	fmt.Println(string(reqJson))
 
-	go apiSender("POST", endpoint, apiKey, reqJson, c)
-
+	go ApiSender("POST", endpoint, apiKey, reqJson, c)
 	var body = <-c
-	fmt.Println(string(body))
+
 	// Convert response to JSON
 	var response GptResponse
 	err = json.Unmarshal(body, &response)
@@ -67,44 +61,4 @@ func GptApiSender() {
 
 	// Print response
 	fmt.Println(response.Choices[0].Text)
-}
-
-func checkGPTApiKey() string {
-	apiKey := os.Getenv("API_KEY")
-	if apiKey == "" {
-		log.Fatalln("API key is not set")
-	}
-	return apiKey
-}
-
-func apiSender(method, url, apiKey string, jsonStr []byte, c chan<- []byte) {
-	fmt.Println(string(jsonStr))
-
-	// Create HTTP request
-	req, err := http.NewRequest(method, url, strings.NewReader(string(jsonStr)))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	// Send HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	defer resp.Body.Close()
-
-	// Read response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	c <- body
 }
