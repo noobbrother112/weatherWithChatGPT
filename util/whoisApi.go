@@ -8,7 +8,7 @@ import (
 const whoisEndpoint = "http://apis.data.go.kr/B551505/whois/ip_address?"
 
 // WhoisApiSender api sender for get where user came from
-func WhoisApiSender(ip string) {
+func WhoisApiSender(ip string) string {
 	c := make(chan []byte)
 
 	// Whois api key
@@ -22,7 +22,7 @@ func WhoisApiSender(ip string) {
 	var data map[string]interface{}
 	if err := json.Unmarshal(body, &data); err != nil {
 		fmt.Println("Error:", err)
-		return
+		return ""
 	}
 
 	responsMap := data["response"].(map[string]interface{})
@@ -33,10 +33,10 @@ func WhoisApiSender(ip string) {
 		netinfo := user["netinfo"].(map[string]interface{})
 		addr := netinfo["addr"].(string)
 
-		fmt.Println(addr)
+		return addr
 	} else {
 		// 유저 정보가 조회되지 않음
-		fmt.Println("nil ")
+		return ""
 	}
 
 }
