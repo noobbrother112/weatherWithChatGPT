@@ -8,7 +8,7 @@ import (
 func main() {
 	//util.GptApiSender()
 	util.SetLocationCodeMap()
-	addr := util.WhoisApiSender("{your ip}")
+	addr := util.WhoisApiSender("220.72.89.208")
 	fmt.Println(addr)
 	code := util.LocationCode(addr)
 	fmt.Println(code)

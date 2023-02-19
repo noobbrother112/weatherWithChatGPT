@@ -40,6 +40,6 @@ func SetLocationCodeMap() {
 		if err != nil {
 			break
 		}
-		locations[record[0]] = record[1]
+		locations[record[1]] = record[0]
 	}
 }

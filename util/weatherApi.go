@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-const whoisEndpoint = "http://apis.data.go.kr/B551505/whois/ip_address?"
+const weatherEndpoint = "http://apis.data.go.kr/B551505/whois/ip_address?"
 
-// WhoisApiSender api sender for get where user came from
-func WhoisApiSender(ip string) string {
+// WeatherApiSender api sender for get weather
+func WeatherApiSender(ip string) string {
 	c := make(chan []byte)
 
 	// Whois api key
@@ -27,9 +27,6 @@ func WhoisApiSender(ip string) string {
 
 	responsMap := data["response"].(map[string]interface{})
 	whois := responsMap["whois"].(map[string]interface{})
-	if whois["korean"] == nil {
-		return "한국 접속 주소가 아닙니다."
-	}
 	korean := whois["korean"].(map[string]interface{})
 	if korean["user"] != nil {
 		user := korean["user"].(map[string]interface{})
